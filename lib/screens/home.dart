@@ -1,8 +1,10 @@
+import 'package:cineproyecto/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'model.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -21,20 +23,63 @@ class _HomeState extends State<Home> {
     });
   }
   @override
-  Widget build(BuildContext context) {
-   return new Scaffold(
-     appBar: AppBar(
-       title: Text('Cine',style: TextStyle(color: Colors.white),),    
-     ),
-     body: Center(
-       child: RaisedButton(
-         child: Text('cerrar sesion'),
-         onPressed:()=>logout(),
-       ),
+    Widget build(BuildContext context) {
+    return   MaterialApp(
+      title: 'json',
+      theme: ThemeData(primarySwatch: Colors.teal),
+      home: Scaffold(
+        appBar: AppBar(title: Text('Peliculas'),),
+        body: Center(
+          child: FutureBuilder<List<Pelicula>>(
+            future: ListaPelicula(),
+            builder: (context,snapshot){
+              if(snapshot.hasData){
+                List<Pelicula> peliculas = snapshot.data;
+                
+                return  new ListView(
+                   
+                  children: peliculas
+                  .map((pelicula)=> Column(mainAxisAlignment: MainAxisAlignment.center,children: <Widget>[
+                         Text('Nombre: ${pelicula.nombre}'),
+                        Text('Duracion: ${pelicula.duracion}'),
+                        Text('Clasificacion: ${pelicula.id_clasificacion}'),
+                        Text('Genero: ${pelicula.id_genero}'),
+                          
+                        new Divider()
+                        
+                  ])) 
+                  .toList(),
+                  
+                  
+                );
+              }
+              else if(snapshot.hasError){
+                return Text('${snapshot.error}');
 
-     )
-   );
-  }
+              }
+              return new CircularProgressIndicator();
+            }
+
+          ),
+        ),
+        drawer: new Drawer(
+          child: ListView(
+            children: <Widget>[
+              new ListTile(
+                title: new Text('Cerrar Sesión'),
+                onTap: (){
+                   logout();
+                },
+              )
+            ],
+          ),
+          
+
+         )
+      ),
+    
+    );
+    }
   void logout() async{ //cuando damos clic en logout borra todo lo de la preferences 
      SharedPreferences preferences = await SharedPreferences.getInstance();
      preferences.clear();
